@@ -7,18 +7,15 @@
  */
 public class Trial
 {
-
-    // stores whether each cell triggered detection for the current scan and the next scan of the radar
     private boolean[][] currentScan;
     private boolean [] [] nextScan;
-
-    // value of each cell is incremented for each scan in which that cell triggers detection 
     private int[][] potentialD;
 
-    // location of the monster
+    // initial location of the monster
     private int monsterLocationRow;
     private int monsterLocationCol;
-
+    
+    // monster's location on the next grid.
     private int nextMonsterLocRow;
     private int nextMonsterLocCol;
 
@@ -28,9 +25,11 @@ public class Trial
     // number of scans of the radar since construction
     private int numScans; 
 
+    // inputed monster's speed 
     private int dx;
     private int dy; 
     
+    // found monster's speed for return  
     private int returnDx;
     private int returnDy;
 
@@ -39,6 +38,7 @@ public class Trial
      * 
      * @param   rows    the number of rows in the radar grid
      * @param   cols    the number of columns in the radar grid
+     * @param   
      */
     public Trial (int rows, int cols,int dx, int dy, int  mRow, int mCol)
     {
