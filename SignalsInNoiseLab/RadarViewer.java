@@ -3,8 +3,8 @@ import javax.swing.JFrame;
 /**
  * Class that contains the main method for the program and creates the frame containing the component.
  * 
- * @author @gcschmit
- * @version 19 July 2014
+ * @author @AllenLin
+ * @version 20 12 2014
  */
 public class RadarViewer
 {
@@ -17,10 +17,12 @@ public class RadarViewer
         // create the radar, set the monster location, and perform the initial scan
         final int ROWS = 100;
         final int COLS = 100;
-        Radar radar = new Radar(ROWS, COLS);
-        radar.setNoiseFraction(0.10);
-        radar.scan();
-        
+        int dx = 5; 
+        int dy = 5;
+        int initialRow = 0;
+        int initialCol = 0;
+        Radar radar = new Radar(ROWS, COLS, dx, dy, initialRow, initialCol );
+        radar.setNoiseFraction(0.05);
         JFrame frame = new JFrame();
         
         frame.setTitle("Signals in Noise Lab");
@@ -47,6 +49,8 @@ public class RadarViewer
             
             frame.repaint();
         }
+        
+       
     }
 
 }

@@ -8,8 +8,8 @@ import javax.swing.JComponent;
 /**
  * Class that is responsible for rendering the current radar scan image and the accumulated radar image.
  * 
- * @author @gcschmit
- * @version 19 July 2014
+ * @author @AllenLin
+ * @version 20 12 2014
  */
 public class RadarComponent extends JComponent
 {
@@ -87,29 +87,5 @@ public class RadarComponent extends JComponent
                 g2.fill(rect);
             }
         }
-        
-        // draw the image for the accumulated radar data to the right of the current scan image
-        final int X_OFFSET = cols * CELL_WIDTH;
-        
-        // draw the image for the accumulated radar scans
-        for(int row = 0; row < rows; row++)
-        {
-            for(int col = 0; col < cols; col++)
-            {
-                int x = X_OFFSET + col * CELL_WIDTH ;
-                int y = row * CELL_HEIGHT ;
-                
-                Rectangle2D.Double rect = new Rectangle2D.Double(x, y, CELL_WIDTH , CELL_HEIGHT );
-                
-                float pixelValue = (float)(radar.getAccumulatedDetection(row, col)) / radar.getNumScans();
-
-                // due to floating-point rounding issues, pixelValue can end up slightly greater than 1.0
-                //  we'll cap it since the Color constructor requires values <= 1.0
-                pixelValue = Math.min(pixelValue, 1.0f);
-                
-                g2.setColor(new Color(pixelValue, pixelValue, pixelValue));
-                g2.fill(rect);
-            }
-        }
-    }
+    }  
 }
