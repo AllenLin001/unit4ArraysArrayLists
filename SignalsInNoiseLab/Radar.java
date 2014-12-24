@@ -183,8 +183,8 @@ public class Radar
     
     public void setMonsterLocation()
     {
-        if (monsterLocationRow + dy <= 100 && monsterLocationCol + dx <=100 &&
-            monsterLocationRow + dy >= 0 && monsterLocationCol + dx >= 0)
+        if (monsterLocationRow + dy < 100 && monsterLocationCol + dx <100 &&
+            monsterLocationRow + dy > 0 && monsterLocationCol + dx > 0)
         {
             this.monsterLocationRow += this.dy;
             this.monsterLocationCol += this.dx;
