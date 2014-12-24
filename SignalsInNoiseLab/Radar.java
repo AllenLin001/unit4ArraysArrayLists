@@ -8,28 +8,28 @@
 public class Radar
 {
 
-    // stores whether each cell triggered detection for the current scan and the next scan of the radar
+    // 2D boolean array for the currentScan 
     private boolean[][] currentScan;
-    private boolean [] [] nextScan;
-
-    // value of each cell is incremented for each scan in which that cell triggers detection 
-
+    
+    // a 2D int array for accumulating all the potential difference vectors
     private int[][] potentialD;
 
     // location of the monster
     private int monsterLocationRow;
     private int monsterLocationCol;
 
-    private int nextMonsterLocRow;
-    private int nextMonsterLocCol;
+
 
     // probability that a cell will trigger a false detection (must be >= 0 and < 1)
     private double noiseFraction;
 
     // number of scans of the radar since construction
     private int numScans; 
-
+    
+    // horizontal displacement of the monster
     private int dx;
+    
+    // vertical displacement of the monster
     private int dy; 
 
     /**
@@ -37,25 +37,27 @@ public class Radar
      * 
      * @param   rows    the number of rows in the radar grid
      * @param   cols    the number of columns in the radar grid
+     * @param   dx      the horizontal displacement of the monster
+     * @param   dy      the vertical displacement of the monster
+     * @param   mRow    the initial row of the monster
+     * @param   mCol    the initial col of the monster
      */
     public Radar (int rows, int cols,int dx, int dy, int  mRow, int mCol)
     {
         // initialize instance variables
         this.dx = dx;
         this.dy = dy;
+        
         this.monsterLocationRow = mRow;
         this.monsterLocationCol = mCol;
-        this.nextMonsterLocRow = 0;
-        this.nextMonsterLocCol = 0;
 
         currentScan = new boolean[rows][cols]; // elements will be set to false
 
-        nextScan= new boolean [rows][cols];
-
-        int[][] potentialD = new int[2*Math.abs(dy)+1][2*Math.abs(dx)+1]; // elements will be set to 0
+        potentialD = new int[11][11]; // elements will be set to 0
 
         numScans= 0;
-        // zero the current scan grid
+        
+        // zero the current scan grid and constructs the initial scan(pattern)
         for(int row = 0; row < currentScan.length; row++)
         {
             for(int col = 0; col < currentScan[0].length; col++)
@@ -63,16 +65,10 @@ public class Radar
                 currentScan[row][col] = false;
             }
         }
-
-        // create the next scan 
-        for(int row = 0; row < nextScan.length; row++)
-        {
-            for(int col = 0; col < nextScan[0].length; col++)
-            {
-                nextScan[row][col] = false;
-            }
-        }
-
+        injectNoise(); 
+        setMonsterLocation();
+        
+        // zero the potential difference table
         for(int row = 0; row < potentialD.length; row++)
         {
             for(int col = 0; col < potentialD[0].length; col++)
@@ -82,44 +78,66 @@ public class Radar
         }
 
     }
+    
     /**
-     * Performs a scan of the radar. Noise is injected into the grid and the accumulator is updated.
-     * 
+     * Performs a scan of the radar. Noise is injected into the grid. Monster's location is updated Accordingly. 
+     * use a boolean 2D array of prevScan to keep track of the previous scan for comparing purposes. 
+     * Record all the potential difference into the potentialD array. 
      */
+    
     public void scan()
     {
 
-        // inject noise into the grid
-        injectNoise(); 
-        setMonsterLocation();
-        if (monsterLocationRow<100)
-        {
-            currentScan[monsterLocationRow][monsterLocationRow]=true;
-            nextScan[nextMonsterLocRow][nextMonsterLocCol]=true;
-        }
-        // compare 
-
+        // constructs a 2D array call prevScan
+        boolean [][] prevScan = new boolean[100][100]; 
+        
+        //make prevScan a copy of the currentScan
         for(int row = 0; row < currentScan.length; row++)
         {
             for(int col = 0; col < currentScan[0].length; col++)
             {
-                if (currentScan[row][col] == true)
+                if (currentScan[row][col]==true)
                 {
-                    for(int row2 = 0; row2 < nextScan.length; row2++)
+                    prevScan[row][col]=true;
+                }
+            }
+        }
+        
+        //zero the currentScan 
+        for(int row = 0; row < currentScan.length; row++)
+        {
+            for(int col = 0; col < currentScan[0].length; col++)
+            {
+                currentScan[row][col] = false;
+            }
+        }
+        
+        // inject noise to the currentScan and update monster's location. 
+        injectNoise();
+        setMonsterLocation();
+        
+        // compare every true points of the two arrays. 
+        // if the difference fall into the range(-5 and 5), record the vector in the potentialD array.  
+        for(int row = 0; row < prevScan.length; row++)
+        {
+            for(int col = 0; col < prevScan[0].length; col++)
+            {
+                if (prevScan[row][col] == true)
+                {
+                    for(int row2 = 0; row2 < currentScan.length; row2++)
                     {
-                        for(int col2 = 0; col2 < nextScan[0].length; col2++)
+                        for(int col2 = 0; col2 < currentScan[0].length; col2++)
                         {
-                            if (nextScan[row2][col2] == true )
+                            if (currentScan[row2][col2] == true )
                             {
                                 int changeX= col2 - col;
                                 int changeY= row2 - row;
                                 
-                               
-                                if (Math.abs(changeX)<=Math.abs(this.dx) 
-                                    && Math.abs(changeY)<=Math.abs(this.dy))
+
+                                if (Math.abs(changeX)<= 5 && Math.abs(changeY)<= 5)
                                 {
-                                    int x= changeX + Math.abs(this.dx) ;     
-                                    int y = changeY + Math.abs(this.dy) ; 
+                                    int x= changeX + 5;      
+                                    int y = changeY + 5; 
                                     this.potentialD[y][x]++;
                                 }                     
                             }
@@ -128,14 +146,14 @@ public class Radar
                 }
             }        
         }
-        // keep track of the total number of scans
-        numScans++;
+        
     } 
 
-    // find the largest number of pair of dx and dy
-    public int[] foundLargest()
+    // find the largest number in potentialD array
+    // and display the represented dx and dy on the screen. 
+    public void foundLargest()
     {
-        int[] info = new int[2];
+        
         int largest = potentialD[0][0]; 
         int foundDy= 0;
         int foundDx= 0;
@@ -151,40 +169,27 @@ public class Radar
                 }
             }
         }
-        info[0]=foundDx;
-        info[1]=foundDy;
 
-        return info; 
+        foundDx-=5;
+        foundDy-=5;
+        System.out.println("Dx: "+ foundDx+" Dy:"+foundDy);
     }
 
     /**
-     * Sets the location of the monster
-     * 
-     * @param   row     the row in which the monster is located
-     * @param   col     the column in which the monster is located
-     * @param   dy      the change in rows
-     * @param   dx      the change in columns 
-     * @pre row and col must be within the bounds of the radar grid
+     * Sets the location of the monster and increments the numScans 
+     * updates monster's location based on inputted dx and dy 
+     * and set the position true in the currentScan array
      */
-
-    public void setMonsterLocation( )
+    
+    public void setMonsterLocation()
     {
-        //update monster's location  
-        if (this.numScans == 0)
+        if (monsterLocationRow + dy <= 100 && monsterLocationCol + dx <=100 &&
+            monsterLocationRow + dy >= 0 && monsterLocationCol + dx >= 0)
         {
+            this.monsterLocationRow += this.dy;
+            this.monsterLocationCol += this.dx;
             currentScan[monsterLocationRow][monsterLocationCol]=true;
-        }
-        else 
-        {
-            monsterLocationRow+=this.dy;
-            monsterLocationCol+=this.dx;
-            int checker1 = 100 - monsterLocationRow;
-            int checker2 = 100 - monsterLocationCol;
-            if (checker1 > this.dy && checker2 > this.dx)
-            {
-                nextMonsterLocRow = monsterLocationRow+this.dy;
-                nextMonsterLocCol = monsterLocationCol+this.dx;
-            }
+            numScans++ ; 
         }
     }
 
@@ -202,18 +207,6 @@ public class Radar
                 if(Math.random() < noiseFraction)
                 {
                     currentScan[row][col] = true;
-                }
-            }
-        }
-
-        for(int row = 0; row < nextScan.length; row++)
-        {
-            for(int col = 0; col < nextScan[0].length; col++)
-            {
-                // each cell has the specified probablily of being a false positive
-                if(Math.random() < noiseFraction)
-                {
-                    nextScan[row][col] = true;
                 }
             }
         }

@@ -3,8 +3,8 @@ import javax.swing.JFrame;
 /**
  * Class that contains the main method for the program and creates the frame containing the component.
  * 
- * @author @AllenLin
- * @version 20 12 2014
+ * @author @gcschmit
+ * @version 19 July 2014
  */
 public class RadarViewer
 {
@@ -14,15 +14,15 @@ public class RadarViewer
      */
     public static void main(String[] args) throws InterruptedException
     {
-        // create the radar, set the monster location, and perform the initial scan
+        // create the radar, set the monster location, dx, dy, noise fraction and perform the scan 
         final int ROWS = 100;
         final int COLS = 100;
-        int dx = 5; 
-        int dy = 5;
+        int dx = 1; 
+        int dy = 1;
         int initialRow = 0;
         int initialCol = 0;
         Radar radar = new Radar(ROWS, COLS, dx, dy, initialRow, initialCol );
-        radar.setNoiseFraction(0.05);
+        radar.setNoiseFraction(0.01);
         JFrame frame = new JFrame();
         
         frame.setTitle("Signals in Noise Lab");
@@ -43,7 +43,7 @@ public class RadarViewer
         // after each scan, instruct the Java Run-Time to redraw the window
         for(int i = 0; i < 100; i++)
         {
-            Thread.sleep(100); // sleep 100 milliseconds (1/10 second)
+            Thread.sleep(200); // sleep 100 milliseconds (1/10 second)
             
             radar.scan();
             
